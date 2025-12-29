@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>家計簿ミニ</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 16px; }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+    input, select { padding: 8px; border-radius: 10px; border: 1px solid #ccc; }
+    button { padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; background: #fff; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
+    .right { text-align: right; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .muted { color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>家計簿ミニ</h1>
+
+  <div class="card">
+    <form class="row" method="get" action="/">
+      <label>月
+        <input type="month" name="month" value="{{ month }}">
+      </label>
+      <button type="submit">切り替え</button>
+      <span class="muted">今月合計：<b>{{ total }}</b> 円</span>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>支出を追加</h2>
+    <form class="row" method="post" action="/add">
+      <label>日付
+        <input type="date" name="spent_date">
+      </label>
+      <label>金額
+        <input type="number" name="amount" min="0" placeholder="例 1200" required>
+      </label>
+      <label>カテゴリ
+        <select name="category">
+          <option>食費</option>
+          <option>日用品</option>
+          <option>交通</option>
+          <option>趣味</option>
+          <option>美容</option>
+          <option>医療</option>
+          <option>住居</option>
+          <option>交際</option>
+          <option>その他</option>
+        </select>
+      </label>
+      <label style="flex: 1;">メモ
+        <input type="text" name="memo" placeholder="例 コンビニ">
+      </label>
+      <button type="submit">追加</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>カテゴリ別合計</h2>
+    <div class="row">
+      {% for k, v in categories.items() %}
+        <div class="card" style="margin:0; padding:10px;">
+          <b>{{ k }}</b><div class="muted">{{ v }} 円</div>
+        </div>
+      {% endfor %}
+      {% if categories|length == 0 %}
+        <span class="muted">まだデータないよ</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>履歴</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>カテゴリ</th>
+          <th class="right">金額</th>
+          <th>メモ</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ item["spent_date"] }}</td>
+          <td>{{ item["category"] }}</td>
+          <td class="right">{{ item["amount"] }}</td>
+          <td>{{ item["memo"] or "" }}</td>
+          <td class="right">
+            <form method="post" action="/delete/{{ item['id'] }}" style="display:inline;">
+              <button type="submit">削除</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if items|length == 0 %}
+        <tr><td colspan="5" class="muted">この月はまだ何もない</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>
